@@ -1,10 +1,10 @@
 from objects.Contest import *
-
+from objects.Problem import *
 
 class Standings:
     def __init__(self, params : dict) :
         self.contest = Contest(params["contest"])
-        self.problems = params["problems"]
+        self.problems = list(map(Problem, params["problems"]))
         self.rows = params["rows"]
 
     def __str__(self):
