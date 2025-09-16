@@ -16,6 +16,11 @@ def main(args):
 
     contests = get_contest_list(group_code)
     standings_list = [get_contest_standings(contest.id) for contest in contests]
+
+    for el in standings_list:
+        print(el)
+        print()
+
     groupStandings = GroupStandings(standings_list)
 
     html = groupStandings.to_html("GroupStandings\\styles.css")
