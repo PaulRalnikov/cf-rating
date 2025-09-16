@@ -2,6 +2,7 @@ from dotenv import load_dotenv
 import sys
 from queries.contest_list import *
 from queries.contest_standings import *
+from GroupStandings.GroupStandings import *
 
 def main(args):
     load_dotenv()
@@ -14,13 +15,12 @@ def main(args):
         out_file = args[2]
 
     contests = get_contest_list(group_code)
-    for contest in contests:
-        print(contest)
-        standings = get_contest_standings(contest.id)
-        print(standings)
+    standings_list = [get_contest_standings(contest.id) for contest in contests]
+    groupStandings = GroupStandings(standings_list)
 
-    with open(out_file, "w") as f:
-        f.write(str(contests))
+    html = groupStandings.to_html("GroupStandings\\styles.css")
+    with open(out_file, "w", encoding='utf-8') as f:
+        f.write(html)
 
 
 if __name__ == "__main__":

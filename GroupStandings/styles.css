@@ -1,0 +1,10 @@
+.datatable {
+   background-color: #e1e1ee;
+   text-align: center;
+}
+
+.datatable-heading {
+    padding: 4px 0 0 6px;
+    font-size:1.4rem;
+    position:relative;
+}
