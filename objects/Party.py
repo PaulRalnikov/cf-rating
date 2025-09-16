@@ -15,3 +15,6 @@ class Party:
         return (f"Party(contestId={self.contestId}, members={self.members}, participantType='{self.participantType}', "
                 f"teamId={self.teamId}, teamName='{self.teamName}', ghost={self.ghost}, room={self.room}, "
                 f"startTimeSeconds={self.startTimeSeconds})")
+
+    def __repr__(self):
+        return self.__str__()

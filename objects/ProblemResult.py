@@ -12,3 +12,6 @@ class ProblemResult:
                 f"rejectedAttemptCount={self.rejectedAttemptCount}, "
                 f"type='{self.type}, "
                 f"bestSubmissionTimeSeconds={self.bestSubmissionTimeSeconds})")
+
+    def __repr__(self):
+        return self.__str__()
