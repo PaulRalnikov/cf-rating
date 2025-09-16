@@ -1,4 +1,5 @@
 from objects.Party import Party
+from objects.ProblemResult import *
 
 class RanklistRow:
     def __init__(self, params : dict):
@@ -8,7 +9,7 @@ class RanklistRow:
         self.penalty = params.get("penalty")
         self.successfulHackCount = params.get("successfulHackCount")
         self.unsuccessfulHackCount = params.get("unsuccessfulHackCount")
-        self.problemResults = params.get("problemResults")
+        self.problemResults = list(map(ProblemResult, params.get("problemResults")))
         self.lastSubmissionTimeSeconds = params.get("lastSubmissionTimeSeconds")
 
     def __str__(self):
