@@ -1,11 +1,12 @@
 from objects.Contest import *
 from objects.Problem import *
+from objects.RanklistRow import *
 
 class Standings:
     def __init__(self, params : dict) :
         self.contest = Contest(params["contest"])
         self.problems = list(map(Problem, params["problems"]))
-        self.rows = params["rows"]
+        self.rows = list(map(RanklistRow, params["rows"]))
 
     def __str__(self):
         return f"Standings(contest id {self.contest.id}, problems : {self.problems}, rows : {self.rows})"
