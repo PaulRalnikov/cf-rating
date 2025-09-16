@@ -1,4 +1,4 @@
-from cf_request import *
+from queries.cf_request import *
 from objects.Contest import *
 import logging
 
