@@ -9,7 +9,7 @@ class Standings:
         self.rows = list(map(RanklistRow, params["rows"]))
 
     def __str__(self):
-        return f"Standings(contest id {self.contest.id}, problems : {self.problems}, rows : {self.rows})"
+        return f"Standings(contest id {self.contest.id}, problems={self.problems}, rows={self.rows})"
 
     def __repr__(self):
         return self.__str__()

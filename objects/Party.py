@@ -1,8 +1,9 @@
+from objects.Member import *
 
 class Party:
     def __init__(self, params : dict):
         self.contestId = params.get("contestId")
-        self.members = params.get("members")
+        self.members = list(map(Member, params.get("members")))
         self.participantType = params.get("participantType")
         self.teamId = params.get("teamId")
         self.teamName = params.get("teamName")
