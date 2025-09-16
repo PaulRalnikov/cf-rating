@@ -1,22 +1,20 @@
 from dotenv import load_dotenv
-from cf_request import *
 import sys
-
-def process_group(group_code : str):
-    r = cf_request('contest.list', {
-        "gym": "true",
-        "groupCode": group_code
-    })
-
-    print(r.status_code)
-    print(r.json())
+from queries.contest_list import *
+from queries.contest_standings import *
 
 def main(args):
     load_dotenv()
     group_codes = args[1:]
 
     for group_code in group_codes:
-        process_group(group_code)
+        contests = get_contest_list(group_code)
+        for contest in contests:
+            print(contest)
+            standings = get_contest_standings(contest.id)
+            print(standings)
+
+        print(contests)
 
 
 if __name__ == "__main__":
