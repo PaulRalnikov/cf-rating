@@ -1,9 +1,12 @@
 # cf-rating
 
-This application generates ratings for participans of all given groups on [codeforces](https://codeforces.com/)
+This application generates rating of participans in given group on [codeforces](https://codeforces.com/).
 
 # Run
 
 ```
-python3 main.py <group-id_1> <group-id_2> ... <group-id_n>
+python3 main.py <group-id> [output-file]
 ```
+
+- `group-id` - unique group identificator: tou can find your group at `https://codeforces.com/group/<group-id>`
+- `output-file` - optional argument sets path by which rating will be placed. Default value: `<group-id>.html`

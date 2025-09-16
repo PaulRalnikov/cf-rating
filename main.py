@@ -5,16 +5,22 @@ from queries.contest_standings import *
 
 def main(args):
     load_dotenv()
-    group_codes = args[1:]
+    if (len(args) < 2):
+        print(f"Passed {len(args) - 1} arguments, expected at least one")
+        exit(-1)
+    group_code = args[1]
+    out_file = f"{group_code}.html"
+    if len(args) > 2:
+        out_file = args[2]
 
-    for group_code in group_codes:
-        contests = get_contest_list(group_code)
-        for contest in contests:
-            print(contest)
-            standings = get_contest_standings(contest.id)
-            print(standings)
+    contests = get_contest_list(group_code)
+    for contest in contests:
+        print(contest)
+        standings = get_contest_standings(contest.id)
+        print(standings)
 
-        print(contests)
+    with open(out_file, "w") as f:
+        f.write(str(contests))
 
 
 if __name__ == "__main__":
