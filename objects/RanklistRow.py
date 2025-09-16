@@ -1,6 +1,8 @@
+from objects.Party import Party
+
 class RanklistRow:
     def __init__(self, params : dict):
-        self.party = params["party"]
+        self.party = Party(params["party"])
         self.rank = params["rank"]
         self.points = params["points"]
         self.penalty = params["penalty"]
