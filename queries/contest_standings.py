@@ -7,7 +7,8 @@ logger = logging.getLogger(__name__)
 def get_contest_standings(contest_id : str) -> Standings:
     responce = cf_request('contest.standings', {
         "contestId": contest_id,
-        "asManager": True
+        "asManager": True,
+        "showUnofficial" : True
     })
     if (responce.status_code != 200):
         logger.error(f"Can not get standings for contest {contest_id}; returned status code {responce.status_code}")
