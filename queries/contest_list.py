@@ -4,7 +4,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def get_contest_list(group_id : str) -> list[Contest]:
+def get_contest_list(group_id : str) -> list:
     responce = cf_request('contest.list', {
         "gym": "true",
         "groupCode": group_id
