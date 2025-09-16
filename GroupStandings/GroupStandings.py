@@ -23,7 +23,7 @@ class GroupStandings:
     '''
     Returns list of StandingsRow sorted by total_solved
     '''
-    def get_rating(self) -> list[StandingsRow]:
+    def get_rating(self) -> list:
 
         rating = dict()
         for standings in self.standings_list:
