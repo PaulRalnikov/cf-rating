@@ -1,15 +1,14 @@
 
 class Problem:
     def __init__(self, params : dict):
-        self.contestId = params["contestId"]
-        self.problemsetName = None if "problemsetName" not in params else params["problemsetName"]
-        self.index = params["index"]
-        self.name = params["name"]
-        self.name = params["name"]
-        self.type = params["type"]
-        self.type = params["type"]
-        self.rating = params["rating"]
-        self.tags = params["tags"]
+        self.contestId = params.get("contestId")
+        self.problemsetName = params.get("problemsetName")
+        self.index = params.get("index")
+        self.name = params.get("name")
+        self.type = params.get("type")
+        self.points = params.get("points")
+        self.rating = params.get("rating")
+        self.tags = params.get("tags")
 
     def __str__(self):
         return (f"Problem(contestId={self.contestId}, problemsetName='{self.problemsetName}', "

@@ -3,13 +3,13 @@ from objects.Party import Party
 class RanklistRow:
     def __init__(self, params : dict):
         self.party = Party(params["party"])
-        self.rank = params["rank"]
-        self.points = params["points"]
-        self.penalty = params["penalty"]
-        self.successfulHackCount = params["successfulHackCount"]
-        self.unsuccessfulHackCount = params["unsuccessfulHackCount"]
-        self.problemResults = params["problemResults"]
-        self.lastSubmissionTimeSeconds = None if "lastSubmissionTimeSeconds" not in params else params["lastSubmissionTimeSeconds"]
+        self.rank = params.get("rank")
+        self.points = params.get("points")
+        self.penalty = params.get("penalty")
+        self.successfulHackCount = params.get("successfulHackCount")
+        self.unsuccessfulHackCount = params.get("unsuccessfulHackCount")
+        self.problemResults = params.get("problemResults")
+        self.lastSubmissionTimeSeconds = params.get("lastSubmissionTimeSeconds")
 
     def __str__(self):
         return (f"Contestant(party='{self.party}', rank={self.rank}, points={self.points}, "
