@@ -1,9 +1,9 @@
 from dotenv import load_dotenv
-import sys
 import shutil
 from queries.contest_list import *
 from queries.contest_standings import *
 from GroupStandings.GroupStandings import *
+import argparse
 
 def copy_file(source_file : str, target_dir : str):
     """Copies suorce_file to target_dir"""
@@ -12,15 +12,26 @@ def copy_file(source_file : str, target_dir : str):
     dest: str = os.path.join(target_dir, os.path.basename(source_file))
     shutil.copy(source_file, dest)
 
-def main(args):
+def parse_arguments():
+    parser = argparse.ArgumentParser(description="")
+
+    parser.add_argument("-g", "--group", help="Id of codeforces group", required=True)
+    parser.add_argument("-o", "--output_directory",
+                        help="Output directory (html and css files). Default - value of codeforces group code")
+    parser.add_argument("-e", "--essential_tasks_dir", help="Path to directory with essetial tasks tables")
+
+    return parser.parse_args()
+
+def main():
     load_dotenv()
-    if (len(args) < 2):
-        print(f"Passed {len(args) - 1} arguments, expected at least one")
-        exit(-1)
-    group_code = args[1]
+    args = parse_arguments()
+    group_code = args.group
     out_dir = f"{group_code}"
-    if len(args) > 2:
-        out_dir = args[2]
+    if args.output_directory is not None:
+        out_dir = args.output_directory
+
+    essential_tasks_dir = args.essential_tasks_dir
+    print(essential_tasks_dir)
 
     contests = get_contest_list(group_code)
     standings_list = [get_contest_standings(contest.id) for contest in contests]
@@ -37,4 +48,4 @@ def main(args):
         f.write(html)
 
 if __name__ == "__main__":
-    main(sys.argv)
+    main()
