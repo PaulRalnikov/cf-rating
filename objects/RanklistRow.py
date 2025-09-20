@@ -20,3 +20,8 @@ class RanklistRow:
 
     def __repr__(self):
         return self.__str__()
+
+    def get_handle(self):
+        if len(self.party.members) != 1:
+            return None
+        return self.party.members[0].handle

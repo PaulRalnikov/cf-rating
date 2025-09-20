@@ -1,79 +1,94 @@
 from objects.Standings import *
 from yattag import Doc
+from collections import defaultdict
+from GroupStandings.SoloHandleStandings import *
+
+def standings_cell(problemResult : ProblemResult) -> str:
+    # generates standings cell (+, -1, +5 etc)  by ProblemResult
+    solved = problemResult.points > 0
+    if not solved:
+        if problemResult.rejectedAttemptCount == 0:
+            return ""
+        return f"-{problemResult.rejectedAttemptCount}"
+    if problemResult.rejectedAttemptCount == 0:
+        return "+"
+    return f"+{problemResult.rejectedAttemptCount}"
 
 class GroupStandings:
-    def __init__(self, standings_list : list):
-        self.standings_list : list[Standings] = sorted(standings_list, key = lambda standings : standings.contest.startTimeSeconds)
-
-    def add_standings(self, standings : Standings):
-        self.standings_list.append(standings)
-
     class StandingsRow:
-        def __init__(self, handle : str, place : str = "", total_solved : int = 0, contests_info = dict()):
+        def __init__(self, handle : str, standings_list : list[SoloHandleStandings]):
             self.handle = handle
-            self.place = place
-            self.totalSolved = total_solved
-            self.contestsInfo = contests_info.copy()
+            self.totalSolved = sum(
+                round(problemResult.points)
+                for standings in standings_list
+                for problemResult in standings.problemResults
+            )
+            self.contestsInfo = {
+                standings.contest.id : dict(
+                    list(
+                        zip(
+                            [problem.index for problem in standings.problems],
+                            map(standings_cell, standings.problemResults)
+                        )
+                    )
+                )
+                for standings in standings_list
+            }
 
         def __str__(self):
-            return f"Row(handle={self.handle}, place={self.place}, total_solved={self.totalSolved}, contests_info={self.contestsInfo})"
+            return f"Row(handle={self.handle}, total_solved={self.totalSolved}, contests_info={self.contestsInfo})"
 
         def __repr__(self):
             return self.__str__()
-    '''
-    Returns list of StandingsRow sorted by total_solved
-    '''
-    def get_rating(self) -> list:
 
-        rating = dict()
-        for standings in self.standings_list:
-            contest_id = standings.contest.id
+
+    def __init__(self, standings_list : list[Standings]):
+        self.standings_list = standings_list
+        rows_by_handle = defaultdict(list)
+        for standings in sorted(standings_list, key = lambda standings : standings.contest.startTimeSeconds):
             for row in standings.rows:
-                handle = row.party.members[0].handle
-                problems_solved = round(row.points)
+                rows_by_handle[row.get_handle()].append(
+                    SoloHandleStandings(
+                        standings.contest,
+                        standings.problems,
+                        row.problemResults
+                    )
+                )
 
-                if handle not in rating:
-                    rating[handle] = self.StandingsRow(handle, total_solved=problems_solved)
-                else:
-                    rating[handle].totalSolved += problems_solved
+        self.rows = sorted(list(
+                self.StandingsRow(handle, rows)
+                for handle, rows in rows_by_handle.items()
+            ),
+            key = lambda row : row.totalSolved,
+            reverse=True
+        )
 
-                def standings_cell(problemResult : ProblemResult):
-                    # generates standings cell (+, -1, +5 etc)  by ProblemResult
-                    solved = problemResult.points > 0
-                    if not solved:
-                        if problemResult.rejectedAttemptCount == 0:
-                            return ""
-                        return f"-{problemResult.rejectedAttemptCount}"
-                    if problemResult.rejectedAttemptCount == 0:
-                        return "+"
-                    return f"+{problemResult.rejectedAttemptCount}"
+    def add_essential_tasks(self, essential_tasks_dir : str):
+        pass
 
-                problem_names = map(lambda problem : problem.index, standings.problems)
-                real_problem_results = map(standings_cell, row.problemResults)
-                zipped = list(zip(problem_names, real_problem_results))
-                rating[handle].contestsInfo[contest_id] = dict(zipped).copy()
 
-        rating_list = sorted(rating.values(), key = lambda row : row.totalSolved, reverse=True)
-
+    def get_places(self) -> dict[str, str]:
+        """
+        Returns mapping handles to its places
+        """
+        # all rows in [curr_start_idx, curr_end_idx) have same totalSolved
         curr_start_idx = -1
         curr_end_idx = -1
-        # all rows in [curr_start_idx, curr_end_idx) have same totalSolved
-        for i, row in enumerate(rating_list):
+        place_by_handle = dict()
+        for i, item in enumerate(self.rows):
+            handle, solved = item.handle, item.totalSolved
             if i >= curr_end_idx:
                 curr_start_idx = i
                 curr_end_idx = i
-                while curr_end_idx < len(rating_list) and rating_list[curr_end_idx].totalSolved == rating_list[curr_start_idx].totalSolved:
+                while curr_end_idx < len(self.rows) and self.rows[curr_end_idx].totalSolved == solved:
                     curr_end_idx += 1
             if curr_start_idx == curr_end_idx - 1:
-                row.place=f"{curr_start_idx + 1}"
+                place_by_handle[handle] = f"{curr_start_idx + 1}"
             else:
-                row.place=f"{curr_start_idx + 1}-{curr_end_idx}"
-
-        # returns tabls sorted by total_solved
-        return rating_list
+                place_by_handle[handle] = f"{curr_start_idx + 1}-{curr_end_idx}"
+        return place_by_handle
 
     def to_html(self, styles_path) -> str:
-        print(self.get_rating())
         doc, tag, text = Doc().tagtext()
 
         with tag('html', lang='ru'):
@@ -113,13 +128,13 @@ class GroupStandings:
                                         with tag('span'):
                                             text(problem.index)
 
-                    rating = self.get_rating()
+                    place_by_handle = self.get_places()
                     with tag("tbody"):
-                        for row in rating:
+                        for row in self.rows:
                             with tag("tr", style="display: table-row"):
                                 # place
                                 with tag("td", klass="left"):
-                                    text(row.place)
+                                    text(place_by_handle[row.handle])
                                 # handle
                                 with tag('td'):
                                     text(row.handle)
