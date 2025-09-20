@@ -3,6 +3,7 @@ import shutil
 from queries.contest_list import *
 from queries.contest_standings import *
 from GroupStandings.GroupStandings import *
+from EssentialTasks.EssentialTasks import *
 import argparse
 
 def copy_file(source_file : str, target_dir : str):
@@ -30,16 +31,28 @@ def main():
     if args.output_directory is not None:
         out_dir = args.output_directory
 
-    essential_tasks_dir = args.essential_tasks_dir
-    print(essential_tasks_dir)
 
     contests = get_contest_list(group_code)
     standings_list = [get_contest_standings(contest.id) for contest in contests]
 
     groupStandings = GroupStandings(standings_list)
 
+    essential_tasks_dir = args.essential_tasks_dir
+    if essential_tasks_dir is not None:
+        essential_tasks_list = map(
+            essential_tasks_from_csv,
+            filter(
+                lambda item_path : os.path.isfile(item_path) and item_path.endswith(".csv"),
+                map(
+                    lambda item : os.path.join(essential_tasks_dir, item),
+                    os.listdir(essential_tasks_dir)
+                )
+            )
+        )
+        groupStandings.add_essential_tasks(essential_tasks_list)
+
     copy_file(os.path.join("GroupStandings", "styles.css"), out_dir)
-    css_out_path = os.path.join(out_dir, "styles.css")
+    css_out_path = "styles.css"
 
     html = groupStandings.to_html(css_out_path)
 

@@ -2,6 +2,7 @@ from objects.Standings import *
 from yattag import Doc
 from collections import defaultdict
 from GroupStandings.SoloHandleStandings import *
+from EssentialTasks.EssentialTasks import *
 
 def standings_cell(problemResult : ProblemResult) -> str:
     # generates standings cell (+, -1, +5 etc)  by ProblemResult
@@ -23,6 +24,7 @@ class GroupStandings:
                 for standings in standings_list
                 for problemResult in standings.problemResults
             )
+
             self.contestsInfo = {
                 standings.contest.id : dict(
                     list(
@@ -44,6 +46,7 @@ class GroupStandings:
 
     def __init__(self, standings_list : list[Standings]):
         self.standings_list = standings_list
+        self.essential_tasks_by_contest = None
         rows_by_handle = defaultdict(list)
         for standings in sorted(standings_list, key = lambda standings : standings.contest.startTimeSeconds):
             for row in standings.rows:
@@ -63,8 +66,14 @@ class GroupStandings:
             reverse=True
         )
 
-    def add_essential_tasks(self, essential_tasks_dir : str):
-        pass
+    def add_essential_tasks(self, essential_tasks : list[EssentialTasks]):
+        self.essential_tasks_by_contest = {
+            item.contestId : item.essential_tasks
+            for item in essential_tasks
+        }
+
+        print("Essential tasks:")
+        print(self.essential_tasks_by_contest)
 
 
     def get_places(self) -> dict[str, str]:
@@ -146,15 +155,13 @@ class GroupStandings:
                                     with tag('td', klass="_OverallCustomRatingFrame_delimiter"):
                                         pass
                                     contest_id = standings.contest.id
+                                    contest_essential_tasks = self.essential_tasks_by_contest.get(contest_id, dict())
                                     for problem in standings.problems:
                                         problem_result : str = row.contestsInfo.get(contest_id, dict()).get(problem.index, "")
-                                        klass = "overall-custom-rating-cell overall-custom-rating-user"
-                                        if (problem_result == ""):
-                                            klass += "overall-custom-rating-no-attempts "
-                                        elif (problem_result.startswith('+')):
-                                            klass += "overall-custom-rating-accepted "
-                                        elif (problem_result.startswith('-')):
-                                            klass += "overall-custom-rating-rejected "
+                                        klass = "overall-custom-rating-cell overall-custom-rating-user "
+                                        if not problem_result.startswith('+') and problem.index in contest_essential_tasks.get(row.handle, list()):
+                                            klass+="essential-task "
+                                        # Problem result
                                         with tag("td", klass=klass):
                                             text(problem_result)
 
