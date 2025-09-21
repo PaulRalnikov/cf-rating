@@ -1,10 +1,12 @@
 from dotenv import load_dotenv
 import shutil
+import argparse
+
 from queries.contest_list import *
 from queries.contest_standings import *
-from GroupStandings.GroupStandings import *
-from EssentialTasks.EssentialTasks import *
-import argparse
+from objects.my.GroupStandings import *
+from objects.my.EssentialTasks import *
+from project_root import *
 
 def copy_file(source_file : str, target_dir : str):
     """Copies suorce_file to target_dir"""
@@ -51,7 +53,7 @@ def main():
         )
         groupStandings.add_essential_tasks(essential_tasks_list)
 
-    copy_file(os.path.join("GroupStandings", "styles.css"), out_dir)
+    copy_file(os.path.join(PROJECT_ROOT, "configs", "styles.css"), out_dir)
     css_out_path = "styles.css"
 
     html = groupStandings.to_html(css_out_path)

@@ -1,5 +1,5 @@
-from objects.Party import Party
-from objects.ProblemResult import *
+from objects.cf.Party import Party
+from objects.cf.ProblemResult import *
 
 class RanklistRow:
     def __init__(self, params : dict):

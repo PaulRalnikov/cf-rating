@@ -1,5 +1,5 @@
 from queries.cf_request import *
-from objects.Standings import *
+from objects.cf.Standings import *
 import logging
 
 logger = logging.getLogger(__name__)

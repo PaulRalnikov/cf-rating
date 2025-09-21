@@ -1,4 +1,4 @@
-from objects.Member import *
+from objects.cf.Member import *
 
 class Party:
     def __init__(self, params : dict):

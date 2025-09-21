@@ -1,6 +1,6 @@
-from objects.Contest import *
-from objects.Problem import *
-from objects.RanklistRow import *
+from objects.cf.Contest import *
+from objects.cf.Problem import *
+from objects.cf.RanklistRow import *
 
 class SoloHandleStandings:
     def __init__(self, contest : Contest, problems : list[Problem], problemResults : list[ProblemResult]):

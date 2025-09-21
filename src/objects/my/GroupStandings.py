@@ -1,8 +1,8 @@
-from objects.Standings import *
+from objects.cf.Standings import *
 from yattag import Doc
 from collections import defaultdict
-from GroupStandings.SoloHandleStandings import *
-from EssentialTasks.EssentialTasks import *
+from objects.my.SoloHandleStandings import *
+from objects.my.EssentialTasks import *
 
 def standings_cell(problemResult : ProblemResult) -> str:
     # generates standings cell (+, -1, +5 etc)  by ProblemResult

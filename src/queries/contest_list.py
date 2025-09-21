@@ -1,5 +1,5 @@
 from queries.cf_request import *
-from objects.Contest import *
+from objects.cf.Contest import *
 import logging
 
 logger = logging.getLogger(__name__)
