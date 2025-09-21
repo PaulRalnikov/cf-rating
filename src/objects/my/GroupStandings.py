@@ -2,7 +2,7 @@ from objects.cf.Standings import *
 from yattag import Doc
 from collections import defaultdict
 from objects.my.SoloHandleStandings import *
-from objects.my.EssentialTasks import *
+from objects.my.ContestEssentialTasks import *
 
 def standings_cell(problemResult : ProblemResult) -> str:
     # generates standings cell (+, -1, +5 etc)  by ProblemResult
@@ -66,14 +66,11 @@ class GroupStandings:
             reverse=True
         )
 
-    def add_essential_tasks(self, essential_tasks : list[EssentialTasks]):
+    def add_essential_tasks(self, essential_tasks : list[ContestEssentialTasks]):
         self.essential_tasks_by_contest = {
             item.contestId : item.essential_tasks
             for item in essential_tasks
         }
-
-        print("Essential tasks:")
-        print(self.essential_tasks_by_contest)
 
 
     def get_places(self) -> dict[str, str]:

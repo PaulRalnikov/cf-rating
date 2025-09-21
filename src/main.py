@@ -1,19 +1,11 @@
 from dotenv import load_dotenv
-import shutil
 import argparse
 
 from queries.contest_list import *
 from queries.contest_standings import *
 from objects.my.GroupStandings import *
-from objects.my.EssentialTasks import *
-from project_root import *
-
-def copy_file(source_file : str, target_dir : str):
-    """Copies suorce_file to target_dir"""
-    if not os.path.exists(target_dir):
-        os.makedirs(target_dir, exist_ok=True)
-    dest: str = os.path.join(target_dir, os.path.basename(source_file))
-    shutil.copy(source_file, dest)
+from objects.my.ContestEssentialTasks import *
+from common import *
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="")
@@ -21,7 +13,8 @@ def parse_arguments():
     parser.add_argument("-g", "--group", help="Id of codeforces group", required=True)
     parser.add_argument("-o", "--output_directory",
                         help="Output directory (html and css files). Default - value of codeforces group code")
-    parser.add_argument("-e", "--essential_tasks_dir", help="Path to directory with essetial tasks tables")
+    parser.add_argument("-e", "--essential_tasks_config",
+                        help="Path to essential tasks config. See its format in configs/essential_tasks/README.md")
 
     return parser.parse_args()
 
@@ -39,18 +32,9 @@ def main():
 
     groupStandings = GroupStandings(standings_list)
 
-    essential_tasks_dir = args.essential_tasks_dir
-    if essential_tasks_dir is not None:
-        essential_tasks_list = map(
-            essential_tasks_from_csv,
-            filter(
-                lambda item_path : os.path.isfile(item_path) and item_path.endswith(".csv"),
-                map(
-                    lambda item : os.path.join(essential_tasks_dir, item),
-                    os.listdir(essential_tasks_dir)
-                )
-            )
-        )
+    essential_tasks_config = args.essential_tasks_config
+    if essential_tasks_config is not None:
+        essential_tasks_list = parse_essential_tasks_config(essential_tasks_config)
         groupStandings.add_essential_tasks(essential_tasks_list)
 
     copy_file(os.path.join(PROJECT_ROOT, "configs", "styles.css"), out_dir)
