@@ -9,6 +9,12 @@ class ContestEssentialTasks:
         # Gives list of problem ids by handle
         self.essential_tasks = essential_tasks
 
+    def __str__(self):
+        return f"ContestEssentialTasks(contestId: {self.contestId}, essential_tasks: {self.essential_tasks})"
+
+    def __repr__(self):
+        return self.__str__()
+
 
 def essential_tasks_from_csv(path : str, contestId) -> ContestEssentialTasks:
     """

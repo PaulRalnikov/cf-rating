@@ -67,6 +67,9 @@ class GroupStandings:
         )
 
     def add_essential_tasks(self, essential_tasks : list[ContestEssentialTasks]):
+        print("Added following essential tasks:\n")
+        print(*essential_tasks, sep = '\n\n')
+        print("=" * 50)
         self.essential_tasks_by_contest = {
             item.contestId : item.essential_tasks
             for item in essential_tasks
