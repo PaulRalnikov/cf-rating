@@ -3,4 +3,5 @@ requests==2.26.0
 dotenv==0.9.9
 yattag==1.16.1
 pandas==2.2.3
+pyyaml==6.0.2
 
