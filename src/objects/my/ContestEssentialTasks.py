@@ -17,9 +17,12 @@ def essential_tasks_from_csv(path : str, contestId) -> ContestEssentialTasks:
     essential_tasks = defaultdict(list)
     df = pd.read_csv(path)
     for _, row in df.iterrows():
-        handle = str(row[0])
+        handle = str(row[0]).replace(" ", "")
         for task_id, value in list(zip(df.columns, row))[1:]:
-            if pd.notna(value):
+            if pd.isna(value):
+                continue
+            str_value = str(value).replace(" ", "")
+            if str_value == '+':
                 essential_tasks[handle].append(str(task_id))
     return ContestEssentialTasks(contestId, essential_tasks)
 
