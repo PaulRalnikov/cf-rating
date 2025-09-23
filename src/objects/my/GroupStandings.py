@@ -47,20 +47,34 @@ class GroupStandings:
     def __init__(self, standings_list : list[Standings]):
         self.standings_list = standings_list
         self.essential_tasks_by_contest = None
-        rows_by_handle = defaultdict(list)
+        rows_by_handle_and_contest = defaultdict(dict)
+        contest_problems = defaultdict(list)
+        contest_by_id = dict()
         for standings in sorted(standings_list, key = lambda standings : standings.contest.startTimeSeconds):
             for row in standings.rows:
-                rows_by_handle[row.get_handle()].append(
-                    SoloHandleStandings(
-                        standings.contest,
-                        standings.problems,
-                        row.problemResults
+                contest_id = standings.contest.id
+                contest_problems[contest_id] = standings.problems
+                contest_by_id[contest_id] = standings.contest
+                handle = row.get_handle()
+
+                if contest_id not in rows_by_handle_and_contest[handle]:
+                    rows_by_handle_and_contest[handle][contest_id] = row.problemResults
+                else:
+                    for i in range(len(row.problemResults)):
+                        rows_by_handle_and_contest[handle][contest_id][i] += row.problemResults[i]
+        self.rows = sorted(list(
+            self.StandingsRow(
+                    handle,
+                    list(
+                        SoloHandleStandings(
+                            contest_by_id[contest_id],
+                            contest_problems[contest_id],
+                            problemResults
+                        )
+                        for contest_id, problemResults in contest_dict.items()
                     )
                 )
-
-        self.rows = sorted(list(
-                self.StandingsRow(handle, rows)
-                for handle, rows in rows_by_handle.items()
+                for handle, contest_dict in rows_by_handle_and_contest.items()
             ),
             key = lambda row : row.totalSolved,
             reverse=True
