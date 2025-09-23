@@ -47,7 +47,7 @@ class GroupStandings:
     def __init__(self, standings_list : list[Standings]):
         self.standings_list = standings_list
         self.essential_tasks_by_contest = None
-        rows_by_handle_and_contest = defaultdict(dict)
+        problem_results_by_handle_and_contest = defaultdict(dict)
         contest_problems = defaultdict(list)
         contest_by_id = dict()
         for standings in sorted(standings_list, key = lambda standings : standings.contest.startTimeSeconds):
@@ -57,11 +57,11 @@ class GroupStandings:
                 contest_by_id[contest_id] = standings.contest
                 handle = row.get_handle()
 
-                if contest_id not in rows_by_handle_and_contest[handle]:
-                    rows_by_handle_and_contest[handle][contest_id] = row.problemResults
+                if contest_id not in problem_results_by_handle_and_contest[handle]:
+                    problem_results_by_handle_and_contest[handle][contest_id] = row.problemResults
                 else:
                     for i in range(len(row.problemResults)):
-                        rows_by_handle_and_contest[handle][contest_id][i] += row.problemResults[i]
+                        problem_results_by_handle_and_contest[handle][contest_id][i] += row.problemResults[i]
         self.rows = sorted(list(
             self.StandingsRow(
                     handle,
@@ -71,10 +71,10 @@ class GroupStandings:
                             contest_problems[contest_id],
                             problemResults
                         )
-                        for contest_id, problemResults in contest_dict.items()
+                        for contest_id, problemResults in contest_results.items()
                     )
                 )
-                for handle, contest_dict in rows_by_handle_and_contest.items()
+                for handle, contest_results in problem_results_by_handle_and_contest.items()
             ),
             key = lambda row : row.totalSolved,
             reverse=True
