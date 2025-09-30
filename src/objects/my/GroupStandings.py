@@ -3,6 +3,7 @@ from yattag import Doc
 from collections import defaultdict
 from objects.my.SoloHandleStandings import *
 from objects.my.ContestEssentialTasks import *
+from objects.my.Mapping import *
 
 def standings_cell(problemResult : ProblemResult) -> str:
     # generates standings cell (+, -1, +5 etc)  by ProblemResult
@@ -47,6 +48,7 @@ class GroupStandings:
     def __init__(self, standings_list : list[Standings]):
         self.standings_list = standings_list
         self.essential_tasks_by_contest = None
+        self.mapping = None
         problem_results_by_handle_and_contest = defaultdict(dict)
         contest_problems = defaultdict(list)
         contest_by_id = dict()
@@ -81,13 +83,13 @@ class GroupStandings:
         )
 
     def add_essential_tasks(self, essential_tasks : list[ContestEssentialTasks]):
-        print("Added following essential tasks:\n")
-        print(*essential_tasks, sep = '\n\n')
-        print("=" * 50)
         self.essential_tasks_by_contest = {
             item.contestId : item.essential_tasks
             for item in essential_tasks
         }
+
+    def add_mapping(self, mapping : Mapping):
+        self.mapping = mapping
 
 
     def get_places(self) -> dict[str, str]:
@@ -141,6 +143,7 @@ class GroupStandings:
                                 with tag('th', klass="_OverallCustomRatingFrame_delimiter top", rowspan=2):
                                     pass
                                 with tag('th', klass="top", colspan=len(standings.problems)):
+                                    # Contest name
                                     text(standings.contest.name)
 
                         # Row with problem indexes
@@ -149,6 +152,7 @@ class GroupStandings:
                                 for problem in standings.problems:
                                     with tag('th'):
                                         with tag('span'):
+                                            # Problem symbol (A, B, C etc)
                                             text(problem.index)
 
                     place_by_handle = self.get_places()
@@ -160,7 +164,12 @@ class GroupStandings:
                                     text(place_by_handle[row.handle])
                                 # handle
                                 with tag('td'):
-                                    text(row.handle)
+                                    handle = row.handle
+                                    view_name = handle
+                                    if self.mapping is not None:
+                                        if handle in self.mapping.name_by_handle:
+                                            view_name += f" ({self.mapping.name_by_handle[handle]})"
+                                    text(view_name)
                                 # total solved
                                 with tag('td'):
                                     text(row.totalSolved)
