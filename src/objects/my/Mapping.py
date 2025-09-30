@@ -11,12 +11,7 @@ class Mapping:
         return self.name_by_handle.__repr__()
 
 def parse_mapping_from_csv(path : str) -> Mapping:
-    try:
-        df = pd.read_csv(path)
-    except FileNotFoundError:
-        print(f"Can not find mapping file `{path}`; returned empty mapping")
-        return Mapping()
-
+    df = pd.read_csv(path)
     name_by_handle = dict()
     if len(df.columns) != 2:
         print(f"Strange mapping table with {len(df.columns)} columns; excepted 2")
