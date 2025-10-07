@@ -34,7 +34,7 @@ def main():
     contests = get_contest_list(group_code)
     standings_list = [get_contest_standings(contest.id) for contest in contests]
 
-    groupStandings = GroupStandings(standings_list)
+    groupStandings = GroupStandings(group_code, standings_list)
 
     essential_tasks_config = args.essential_tasks_config
     if essential_tasks_config is not None:

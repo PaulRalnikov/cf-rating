@@ -4,6 +4,7 @@ from collections import defaultdict
 from objects.my.SoloHandleStandings import *
 from objects.my.ContestEssentialTasks import *
 from objects.my.Mapping import *
+from objects.common import *
 
 def standings_cell(problemResult : ProblemResult) -> str:
     # generates standings cell (+, -1, +5 etc)  by ProblemResult
@@ -45,7 +46,8 @@ class GroupStandings:
             return self.__str__()
 
 
-    def __init__(self, standings_list : list[Standings]):
+    def __init__(self, group_id : str, standings_list : list[Standings]):
+        self.group_id = group_id
         self.standings_list = standings_list
         self.essential_tasks_by_contest = None
         self.mapping = None
@@ -120,13 +122,13 @@ class GroupStandings:
             with tag('head'):
                 doc.asis('<meta charset="UTF-8">')
                 with tag('title'):
-                    text('Результаты участников')
+                    text('Сводная таблица')
                 with tag('link', rel='stylesheet', href=styles_path):
                     pass
 
             with tag('body'):
-                with tag('h1'):
-                    text('Результаты участников')
+                with tag('h1', style="text-align: center"):
+                    text('Сводная таблица ')
 
                 with tag('table', border='1'):
                     with tag('thead'):
@@ -144,16 +146,19 @@ class GroupStandings:
                                     pass
                                 with tag('th', klass="top", colspan=len(standings.problems)):
                                     # Contest name
-                                    text(standings.contest.name)
+                                    contest = standings.contest
+                                    with tag('a', href=get_contest_url(self.group_id, contest.id), klass = "fancy-link"):
+                                        text(contest.name)
 
                         # Row with problem indexes
                         with tag('tr', style="display: table-row"):
                             for standings in self.standings_list:
                                 for problem in standings.problems:
                                     with tag('th'):
-                                        with tag('span'):
-                                            # Problem symbol (A, B, C etc)
-                                            text(problem.index)
+                                        with tag('a', href = get_problem_url(self.group_id, contest.id, problem.index), klass = "fancy-link"):
+                                            with tag('span'):
+                                                # Problem symbol (A, B, C etc)
+                                                text(problem.index)
 
                     place_by_handle = self.get_places()
                     with tag("tbody"):
@@ -168,10 +173,12 @@ class GroupStandings:
                                     view_name = handle
                                     if self.mapping is not None:
                                         if handle in self.mapping.name_by_handle:
-                                            view_name += f" ({self.mapping.name_by_handle[handle]})"
-                                    text(view_name)
+                                            view_name += (f" ({self.mapping.name_by_handle[handle]})")
+
+                                    with tag('a', href=get_link_to_profile(handle), klass = "fancy-link"):
+                                        text(view_name)
                                 # total solved
-                                with tag('td'):
+                                with tag('td', style="font-weight: bold; text-align : center"):
                                     text(row.totalSolved)
                                 for standings in self.standings_list:
                                     # delimeter
@@ -181,9 +188,19 @@ class GroupStandings:
                                     contest_essential_tasks = self.essential_tasks_by_contest.get(contest_id, dict())
                                     for problem in standings.problems:
                                         problem_result : str = row.contestsInfo.get(contest_id, dict()).get(problem.index, "")
-                                        klass = "overall-custom-rating-cell overall-custom-rating-user "
-                                        if not problem_result.startswith('+') and problem.index in contest_essential_tasks.get(row.handle, list()):
-                                            klass+="essential-task "
+                                        klass = "overall-custom-rating-cell "
+
+                                        is_essential = problem.index in contest_essential_tasks.get(row.handle, list())
+                                        is_accepted = problem_result.startswith('+')
+
+                                        if is_essential:
+                                            if is_accepted:
+                                                klass += "essential-accepted "
+                                            else:
+                                                klass += "essential-not-accepted "
+                                        elif is_accepted:
+                                            klass += "not-essential-accepted "
+
                                         # Problem result
                                         with tag("td", klass=klass):
                                             text(problem_result)
