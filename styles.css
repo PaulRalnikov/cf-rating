@@ -1,3 +1,12 @@
+:root{
+  --font-sans: "Inter", "Segoe UI", Roboto, system-ui, -apple-system, "Helvetica Neue", Arial;
+  --text-default: #0B1220;
+  --text-on-color: #ffffff;
+  --link: #1652B4;
+  --link-hover: #0B3D91;
+  --cell-padding: 10px 12px;
+}
+
 .datatable td {
     width: auto !important;
     max-width: 20em !important;
@@ -176,68 +185,139 @@ span.confirmation-button {
 .overall-custom-rating-cell {
     color: #37474F;
     font-weight: bold;
+    text-align: center;
 }
 
 /* Verdicts */
 
-.overall-custom-rating-no-attempts {
-
-}
-
-.overall-custom-rating-accepted.overall-custom-rating-contestant {
-    background-color: #00E676 !important;
-}
-
-.overall-custom-rating-accepted.overall-custom-rating-virtual {
+.essential-accepted {
     background-color: #69F0AE !important;
 }
 
-.overall-custom-rating-accepted.overall-custom-rating-practice {
+.essential-not-accepted {
+    background-color: #FF7575;
+}
+
+.not-essential-accepted {
     background-color: #B9F6CA !important;
 }
 
-.overall-custom-rating-accepted {
-    /*color: #0a0;*/
-    /*font-weight: bold;*/
+/* fancy-link.css (адаптировано под основной цвет #1652B4) */
+
+.fancy-link {
+  --accent: #1652B4;            /* основной адаптированный синий */
+  --accent-dark: #0B3D91;       /* тёмный вариант для hover/active */
+  --bg: transparent;
+  --text: #0b1220;
+  --underline-height: 2px;
+  --padding-vertical: 6px;
+  --padding-horizontal: 8px;
+  --radius: 6px;
+  --transition: 200ms cubic-bezier(.2,.9,.3,1);
+
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: var(--padding-vertical) var(--padding-horizontal);
+  color: var(--accent);
+  background: var(--bg);
+  text-decoration: none;
+  border-radius: var(--radius);
+  position: relative;
+  font-weight: 600;
+  line-height: 1;
+  transition: color var(--transition), background-color var(--transition),
+              transform var(--transition), box-shadow var(--transition);
+  -webkit-tap-highlight-color: transparent;
 }
 
-.overall-custom-rating-rejected {
-    color: red;
-    font-weight: normal;
+.fancy-link::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 6px;
+  height: var(--underline-height);
+  background: linear-gradient(90deg, rgba(22,82,180,0.95), rgba(22,82,180,0.6));
+  border-radius: 2px;
+  transform-origin: left center;
+  transform: scaleX(0);
+  transition: transform var(--transition);
+  pointer-events: none;
+  opacity: 0.95;
 }
 
-.overall-custom-rating-partial {
-    color: black !important;
-    background-color: #64FFDA !important;
-    font-weight: bold !important;
-
-    /*font-weight: bold;*/
+.fancy-link:hover,
+.fancy-link:focus {
+  color: var(--accent-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(11,61,145,0.08);
 }
 
-/* Participation type */
-
-.overall-custom-rating-contestant {
-
+.fancy-link:hover::after,
+.fancy-link:focus::after {
+  transform: scaleX(1);
 }
 
-.overall-custom-rating-virtual {
-
+.fancy-link:active {
+  transform: translateY(0);
+  color: var(--accent-dark);
+  box-shadow: 0 3px 8px rgba(11,61,145,0.06);
 }
 
-.overall-custom-rating-practice {
-
+.fancy-link:focus-visible {
+  outline: 3px solid rgba(22,82,180,0.14);
+  outline-offset: 4px;
 }
 
-/* User or team submission */
-
-.overall-custom-rating-user {
-
+.fancy-link .icon {
+  display: inline-flex;
+  width: 1em;
+  height: 1em;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--transition);
 }
 
-.overall-custom-rating-team {
-
+.fancy-link:hover .icon,
+.fancy-link:focus .icon {
+  transform: translateX(6px) rotate(4deg);
 }
 
-.essential-task {
-    background-color: red;
+.fancy-link.dark {
+  --accent: #ffffff;
+  --accent-dark: #e6eefc;
+  --bg: rgba(255,255,255,0.06);
+  color: var(--accent);
+}
+
+.fancy-link.small {
+  --padding-vertical: 4px;
+  --padding-horizontal: 6px;
+  font-size: 0.9rem;
+  --underline-height: 1.5px;
+}
+
+.fancy-link.large {
+  --padding-vertical: 10px;
+  --padding-horizontal: 12px;
+  font-size: 1.05rem;
+  --underline-height: 2.5px;
+}
+
+/* внешний-иконка (пример) */
+.fancy-link.external::after {
+  content: "→";
+  position: static;
+  transform: none;
+  margin-left: 0.5rem;
+  font-size: 0.95em;
+  opacity: 0.9;
+}
+
+@media print {
+  .fancy-link,
+  .fancy-link::after {
+    transition: none !important;
+  }
 }
