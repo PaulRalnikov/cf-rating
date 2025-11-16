@@ -39,7 +39,7 @@ jobs:
           API_KEY: ${{ secrets.API_KEY }}
           API_SECRET: ${{ secrets.API_SECRET }}
         run: |
-          python3 src/main.py -g eyxap8qPwM -o ${{env.ARTIFACTS_DIR}} -e configs/essential_tasks/config.yml -m configs/mapping.csv
+          python3 src/main.py -g eyxap8qPwM -o ${{env.ARTIFACTS_DIR}} -e configs/essential_tasks/config.yml -m configs/mapping.csv -i configs/ignored_contests.txt
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
