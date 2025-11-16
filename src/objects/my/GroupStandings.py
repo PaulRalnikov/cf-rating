@@ -61,6 +61,9 @@ class GroupStandings:
                 contest_by_id[contest_id] = standings.contest
                 handle = row.get_handle()
 
+                if handle is None:
+                    continue
+
                 if contest_id not in problem_results_by_handle_and_contest[handle]:
                     problem_results_by_handle_and_contest[handle][contest_id] = row.problemResults
                 else:
