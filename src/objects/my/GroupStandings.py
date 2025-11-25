@@ -156,6 +156,7 @@ class GroupStandings:
                         # Row with problem indexes
                         with tag('tr', style="display: table-row"):
                             for standings in self.standings_list:
+                                contest = standings.contest
                                 for problem in standings.problems:
                                     with tag('th'):
                                         with tag('a', href = get_problem_url(self.group_id, contest.id, problem.index), klass = "fancy-link"):
