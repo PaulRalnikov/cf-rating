@@ -64,11 +64,11 @@ class GroupStandings:
 
         if len(standings_without_start_time) == 0:
             logger.info(f"Start time set for all contests; sort them byt it")
-            standings_list.sort(key = lambda standings : standings.contest.startTimeSeconds)
+            standings_list.sort(key = lambda standings : standings.contest.startTimeSeconds, reverse=True)
         else:
             contest_ids = [standings.contest.id for standings in standings_without_start_time]
             logger.warning(f"Start time does not set for some contests: {contest_ids}); sort contests by id")
-            standings_list.sort(key = lambda standings : standings.contest.id)
+            standings_list.sort(key = lambda standings : standings.contest.id, reverse=True)
 
         for standings in standings_list:
             for row in standings.rows:
