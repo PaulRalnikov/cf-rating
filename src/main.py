@@ -35,6 +35,7 @@ def read_ignored_contests(path : str):
         except ValueError as e:
             raise ValueError(f"Coudld not interpret one of line in filw with ignored contest ids list: {e}")
     return result
+
 def main():
     load_dotenv()
     args = parse_arguments()
@@ -66,7 +67,7 @@ def main():
     essential_tasks_config = args.essential_tasks_config
     if essential_tasks_config is not None:
         essential_tasks_list = parse_essential_tasks_config(essential_tasks_config)
-        logger.info(f"Parsed essential tasks: {essential_tasks_list}")
+        logger.info("Parsed essential tasks")
         groupStandings.add_essential_tasks(essential_tasks_list)
 
     mapping_path = args.mapping

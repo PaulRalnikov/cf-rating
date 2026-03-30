@@ -23,7 +23,7 @@ def essential_tasks_from_csv(path : str, contestId) -> ContestEssentialTasks:
     essential_tasks = defaultdict(list)
     df = pd.read_csv(path)
     for _, row in df.iterrows():
-        handle = str(row[0]).replace(" ", "")
+        handle = str(row.iloc[0]).replace(" ", "")
         for task_id, value in list(zip(df.columns, row))[1:]:
             if pd.isna(value):
                 continue

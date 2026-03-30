@@ -5,6 +5,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 def get_contest_standings(contest_id : str) -> Standings:
+    logger.info(f"Send request for info about contest {contest_id}")
     responce = cf_request('contest.standings', {
         "contestId": contest_id,
         "asManager": True,
@@ -29,5 +30,7 @@ def get_contest_standings(contest_id : str) -> Standings:
     if body["status"] != "OK":
         logger.error(f"Can not get standings for contest {contest_id}; body: {body}")
         return None
+
+    logger.info(f"Succesefully got info about contest {contest_id}")
 
     return Standings(body["result"])

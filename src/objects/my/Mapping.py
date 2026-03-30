@@ -17,8 +17,8 @@ def parse_mapping_from_csv(path : str) -> Mapping:
         print(f"Strange mapping table with {len(df.columns)} columns; excepted 2")
         return Mapping()
     for _, row in df.iterrows():
-        handle = str(row[0]).replace(" ", "")
-        name = str(row[1])
+        handle = str(row.iloc[0]).replace(" ", "")
+        name = str(row.iloc[1])
         if handle in name_by_handle:
             print(f"Copy of handle (old value `{name_by_handle[handle]}`, new one - `{name}`); ignored")
         else:

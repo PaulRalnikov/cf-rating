@@ -54,11 +54,32 @@ class GroupStandings:
         problem_results_by_handle_and_contest = defaultdict(dict)
         contest_problems = defaultdict(list)
         contest_by_id = dict()
-        for standings in sorted(standings_list, key = lambda standings : standings.contest.startTimeSeconds):
+
+        standings_without_start_time = list(
+            filter(
+                lambda standings: standings.contest.startTimeSeconds is None,
+                standings_list
+            )
+        )
+
+        if len(standings_without_start_time) == 0:
+            logger.info(f"Start time set for all contests; sort them byt it")
+            standings_list.sort(key = lambda standings : standings.contest.startTimeSeconds)
+        else:
+            contest_ids = [standings.contest.id for standings in standings_without_start_time]
+            logger.warning(f"Start time does not set for some contests: {contest_ids}); sort contests by id")
+            standings_list.sort(key = lambda standings : standings.contest.id)
+
+        for standings in standings_list:
             for row in standings.rows:
-                contest_id = standings.contest.id
+                contest = standings.contest
+                contest_id = contest.id
+
+                if (contest.type != "ICPC"):
+                    logger.warning(f"Found contest {contest_id} with type that differs from ICPC ({contest.type})")
+
                 contest_problems[contest_id] = standings.problems
-                contest_by_id[contest_id] = standings.contest
+                contest_by_id[contest_id] = contest
                 handle = row.get_handle()
 
                 if handle is None:
@@ -69,6 +90,7 @@ class GroupStandings:
                 else:
                     for i in range(len(row.problemResults)):
                         problem_results_by_handle_and_contest[handle][contest_id][i] += row.problemResults[i]
+
         self.rows = sorted(list(
             self.StandingsRow(
                     handle,
