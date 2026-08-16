@@ -211,7 +211,7 @@ class GroupStandings:
                                     with tag('td', klass="_OverallCustomRatingFrame_delimiter"):
                                         pass
                                     contest_id = standings.contest.id
-                                    contest_essential_tasks = self.essential_tasks_by_contest.get(contest_id, dict())
+                                    contest_essential_tasks = self.essential_tasks_by_contest.get(contest_id, dict()) if self.essential_tasks_by_contest is not None else dict()
                                     for problem in standings.problems:
                                         problem_result : str = row.contestsInfo.get(contest_id, dict()).get(problem.index, "")
                                         klass = "overall-custom-rating-cell "

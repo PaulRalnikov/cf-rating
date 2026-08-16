@@ -21,13 +21,14 @@ def parse_arguments():
                         help="Path to essential tasks config. See its format in configs/essential_tasks/README.md")
     parser.add_argument("-i", "--ignored_contests",
                         help="Path to file with list of ignored contests ids. Ids should be written by one in line")
-
+    parser.add_argument("-w", "--contests_whitelist",
+                            help="Path to file with white list of contests ids. Ids should be written by one in line")
     parser.add_argument("-m", "--mapping",
                         help="Path to file with csv table that maps codeforces handles to names")
 
     return parser.parse_args()
 
-def read_ignored_contests(path : str):
+def read_contest_ids_set(path : str):
     result = set()
     with open(path, "r") as f:
         try:
@@ -45,16 +46,21 @@ def main():
         out_dir = args.output_directory
 
     ignored_contests_file = args.ignored_contests
-    ignored_contests_ids = read_ignored_contests(ignored_contests_file) if ignored_contests_file is not None else []
+    ignored_contests_ids = read_contest_ids_set(ignored_contests_file) if ignored_contests_file is not None else []
+
+    contests_whitelist = args.contests_whitelist
+    contests_whitelist = read_contest_ids_set(contests_whitelist) if contests_whitelist is not None else None
 
     logger.info(f"Ignored contests list: {ignored_contests_ids}")
+    logger.info(f"Contests whitelist: {contests_whitelist}")
 
     contests = list(
         filter(
-            lambda contest : contest.id not in ignored_contests_ids,
+            lambda contest : contest.id not in ignored_contests_ids and (contests_whitelist is None or contest.id in contests_whitelist),
             get_contest_list(group_code)
         )
     )
+
     standings_list = list(
         filter(
             lambda x : x is not None,
