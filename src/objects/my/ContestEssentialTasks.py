@@ -36,7 +36,7 @@ def parse_essential_tasks_config(config_path : str) -> list[ContestEssentialTask
     """
     Reads essential tasks config by given path and returns list of EssentialTasks
     """
-    config = load_yaml(config_path)
+    config = load_yaml(config_path) or dict()
     config_dir = os.path.dirname(config_path)
     return [
         essential_tasks_from_csv(os.path.join(config_dir, essential_tasks), contest_id)
