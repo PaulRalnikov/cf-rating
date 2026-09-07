@@ -44,7 +44,7 @@ jobs:
           -e configs/2026-2027/essential_tasks/config.yml \
           -m configs/mapping.csv \
           -i configs/2026-2027/ignored_contests.txt \
-          -o ${{env.ARTIFACTS_DIR}}
+          -o ${{env.ARTIFACTS_DIR}}/2026-2027
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
