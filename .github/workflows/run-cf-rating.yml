@@ -43,7 +43,7 @@ jobs:
           -g P9bmSLnTz0 \
           -e configs/2026-2027/essential_tasks/config.yml \
           -m configs/mapping.csv \
-          # -i configs/2026-2027/ignored_contests.txt \
+          -i configs/2026-2027/ignored_contests.txt \
           -o ${{env.ARTIFACTS_DIR}}
 
       - name: Deploy to GitHub Pages
