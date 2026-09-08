@@ -42,7 +42,7 @@ jobs:
           python3 src/main.py \
           -g P9bmSLnTz0 \
           -e configs/2026-2027/essential_tasks/config.yml \
-          -m configs/2026-2027/smapping.csv \
+          -m configs/2026-2027/mapping.csv \
           -i configs/2026-2027/ignored_contests.txt \
           -o ${{env.ARTIFACTS_DIR}}/2026-2027
 
