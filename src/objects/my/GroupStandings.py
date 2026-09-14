@@ -191,7 +191,7 @@ class GroupStandings:
                             with tag('th', rowspan=2):
                                 text("Штраф")
                             with tag('th', rowspan=2):
-                                text("Апсолв")
+                                text("Дорешано")
 
                             for standings in self.standings_list:
                                 with tag('th', klass="_OverallCustomRatingFrame_delimiter top", rowspan=2):
