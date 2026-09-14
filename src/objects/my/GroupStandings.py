@@ -27,11 +27,13 @@ class GroupStandings:
                 for problemResult in standings.problemResults
             )
 
-            # Total number of wrong (rejected) submissions across all contests
+            # Total number of wrong (rejected) submissions across all contests,
+            # counted only for problems that were eventually solved
             self.totalPenalty = sum(
                 problemResult.rejectedAttemptCount or 0
                 for standings in standings_list
                 for problemResult in standings.problemResults
+                if (problemResult.points or 0) > 0
             )
 
             # Number of problems solved after the end of the contest (e.g. in practice mode)
