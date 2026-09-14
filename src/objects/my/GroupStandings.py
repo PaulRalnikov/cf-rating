@@ -36,8 +36,8 @@ class GroupStandings:
                 if (problemResult.points or 0) > 0
             )
 
-            # Number of problems solved after the end of the contest (e.g. in practice mode)
-            self.totalSolvedAfterContest = sum(
+            # Number of upsolved problems: solved after the end of the contest (e.g. in practice mode)
+            self.totalUpsolved = sum(
                 1
                 for standings in standings_list
                 for problemResult in standings.problemResults
@@ -61,7 +61,7 @@ class GroupStandings:
 
         def __str__(self):
             return (f"Row(handle={self.handle}, total_solved={self.totalSolved}, "
-                    f"total_penalty={self.totalPenalty}, total_solved_after_contest={self.totalSolvedAfterContest}, "
+                    f"total_penalty={self.totalPenalty}, total_upsolved={self.totalUpsolved}, "
                     f"contests_info={self.contestsInfo})")
 
         def __repr__(self):
@@ -128,8 +128,8 @@ class GroupStandings:
                 for handle, contest_results in problem_results_by_handle_and_contest.items()
             ),
             # More solved is better; on a tie, less penalty is better;
-            # on a further tie, fewer catch-up (post-contest) solves is better
-            key = lambda row : (-row.totalSolved, row.totalPenalty, row.totalSolvedAfterContest)
+            # on a further tie, fewer upsolved (post-contest) problems is better
+            key = lambda row : (-row.totalSolved, row.totalPenalty, row.totalUpsolved)
         )
 
     def add_essential_tasks(self, essential_tasks : list[ContestEssentialTasks]):
@@ -191,7 +191,7 @@ class GroupStandings:
                             with tag('th', rowspan=2):
                                 text("Штраф")
                             with tag('th', rowspan=2):
-                                text("Дорешано")
+                                text("Апсолв")
 
                             for standings in self.standings_list:
                                 with tag('th', klass="_OverallCustomRatingFrame_delimiter top", rowspan=2):
@@ -236,9 +236,9 @@ class GroupStandings:
                                 # total penalty (wrong submissions count)
                                 with tag('td', style="text-align : center"):
                                     text(row.totalPenalty)
-                                # total problems solved after contest end (catch-up)
+                                # total upsolved problems (solved after contest end)
                                 with tag('td', style="text-align : center"):
-                                    text(row.totalSolvedAfterContest)
+                                    text(row.totalUpsolved)
                                 for standings in self.standings_list:
                                     # delimeter
                                     with tag('td', klass="_OverallCustomRatingFrame_delimiter"):
