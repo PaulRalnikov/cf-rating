@@ -125,8 +125,9 @@ class GroupStandings:
                 )
                 for handle, contest_results in problem_results_by_handle_and_contest.items()
             ),
-            key = lambda row : row.totalSolved,
-            reverse=True
+            # More solved is better; on a tie, less penalty is better;
+            # on a further tie, fewer catch-up (post-contest) solves is better
+            key = lambda row : (-row.totalSolved, row.totalPenalty, row.totalSolvedAfterContest)
         )
 
     def add_essential_tasks(self, essential_tasks : list[ContestEssentialTasks]):
