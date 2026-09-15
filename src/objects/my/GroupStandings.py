@@ -113,6 +113,31 @@ class GroupStandings:
                     for i in range(len(row.problemResults)):
                         problem_results_by_handle_and_contest[handle][contest_id][i] += row.problemResults[i]
 
+        # For each (contest, problem) picks the handle that should present it at the review:
+        # the one who solved it with the fewest wrong attempts, and on a tie, the one who solved it first
+        self.presenter_by_contest_and_problem = defaultdict(dict)
+        for contest_id, problems in contest_problems.items():
+            for problem_idx, problem in enumerate(problems):
+                best_handle = None
+                best_key = None
+                for handle, contest_results in problem_results_by_handle_and_contest.items():
+                    problem_results = contest_results.get(contest_id)
+                    if problem_results is None:
+                        continue
+                    problem_result = problem_results[problem_idx]
+                    if (problem_result.points or 0) <= 0:
+                        continue
+                    key = (
+                        problem_result.rejectedAttemptCount or 0,
+                        problem_result.bestSubmissionTimeSeconds
+                        if problem_result.bestSubmissionTimeSeconds is not None
+                        else float("inf"),
+                    )
+                    if best_key is None or key < best_key:
+                        best_key = key
+                        best_handle = handle
+                self.presenter_by_contest_and_problem[contest_id][problem.index] = best_handle
+
         self.rows = sorted(list(
             self.StandingsRow(
                     handle,
@@ -251,6 +276,7 @@ class GroupStandings:
 
                                         is_essential = problem.index in contest_essential_tasks.get(row.handle, list())
                                         is_accepted = problem_result.startswith('+')
+                                        is_presenter = self.presenter_by_contest_and_problem.get(contest_id, dict()).get(problem.index) == row.handle
 
                                         if is_essential:
                                             if is_accepted:
@@ -260,9 +286,15 @@ class GroupStandings:
                                         elif is_accepted:
                                             klass += "not-essential-accepted "
 
+                                        if is_presenter:
+                                            klass += "presenter-cell "
+
                                         # Problem result
                                         with tag("td", klass=klass):
                                             text(problem_result)
+                                            if is_presenter:
+                                                with tag("span", klass="presenter-icon", title="Рассказывает эту задачу"):
+                                                    text("🎤")
 
 
 
