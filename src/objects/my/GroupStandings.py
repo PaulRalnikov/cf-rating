@@ -6,6 +6,10 @@ from objects.my.ContestEssentialTasks import *
 from objects.my.Mapping import *
 from objects.common import *
 
+# Participant types whose submissions count as made during the contest itself
+# (practice and virtual participations are excluded)
+IN_CONTEST_PARTICIPANT_TYPES = ("CONTESTANT", "OUT_OF_COMPETITION")
+
 def standings_cell(problemResult : ProblemResult) -> str:
     # generates standings cell (+, -1, +5 etc)  by ProblemResult
     solved = problemResult.points > 0
@@ -19,7 +23,8 @@ def standings_cell(problemResult : ProblemResult) -> str:
 
 class GroupStandings:
     class StandingsRow:
-        def __init__(self, handle : str, standings_list : list[SoloHandleStandings]):
+        def __init__(self, handle : str, standings_list : list[SoloHandleStandings],
+                     coffins_by_contest : dict[int, set[str]]):
             self.handle = handle
             self.totalSolved = sum(
                 round(problemResult.points)
@@ -47,6 +52,15 @@ class GroupStandings:
                 and problemResult.bestSubmissionTimeSeconds > standings.contest.durationSeconds
             )
 
+            # Number of solved "coffins": problems that nobody solved before the end of the contest
+            self.totalCoffins = sum(
+                1
+                for standings in standings_list
+                for problem, problemResult in zip(standings.problems, standings.problemResults)
+                if (problemResult.points or 0) > 0
+                and problem.index in coffins_by_contest.get(standings.contest.id, set())
+            )
+
             self.contestsInfo = {
                 standings.contest.id : dict(
                     list(
@@ -62,6 +76,7 @@ class GroupStandings:
         def __str__(self):
             return (f"Row(handle={self.handle}, total_solved={self.totalSolved}, "
                     f"total_penalty={self.totalPenalty}, total_upsolved={self.totalUpsolved}, "
+                    f"total_coffins={self.totalCoffins}, "
                     f"contests_info={self.contestsInfo})")
 
         def __repr__(self):
@@ -76,6 +91,8 @@ class GroupStandings:
         problem_results_by_handle_and_contest = defaultdict(dict)
         contest_problems = defaultdict(list)
         contest_by_id = dict()
+        # (contest id, problem index) pairs solved by someone during the contest itself
+        solved_in_contest = set()
 
         standings_without_start_time = list(
             filter(
@@ -102,6 +119,11 @@ class GroupStandings:
 
                 contest_problems[contest_id] = standings.problems
                 contest_by_id[contest_id] = contest
+                if row.party.participantType in IN_CONTEST_PARTICIPANT_TYPES:
+                    for problem, problem_result in zip(standings.problems, row.problemResults):
+                        if (problem_result.points or 0) > 0:
+                            solved_in_contest.add((contest_id, problem.index))
+
                 handle = row.get_handle()
 
                 if handle is None:
@@ -138,6 +160,18 @@ class GroupStandings:
                         best_handle = handle
                 self.presenter_by_contest_and_problem[contest_id][problem.index] = best_handle
 
+        # "Coffin" is a problem that nobody solved before the end of the contest.
+        # While the contest is not finished yet, no problem is considered a coffin
+        self.coffins_by_contest = {
+            contest_id : {
+                problem.index
+                for problem in problems
+                if (contest_id, problem.index) not in solved_in_contest
+            }
+            for contest_id, problems in contest_problems.items()
+            if contest_by_id[contest_id].phase not in ("BEFORE", "CODING")
+        }
+
         self.rows = sorted(list(
             self.StandingsRow(
                     handle,
@@ -148,7 +182,8 @@ class GroupStandings:
                             problemResults
                         )
                         for contest_id, problemResults in contest_results.items()
-                    )
+                    ),
+                    self.coffins_by_contest
                 )
                 for handle, contest_results in problem_results_by_handle_and_contest.items()
             ),
@@ -231,8 +266,9 @@ class GroupStandings:
                         with tag('tr', style="display: table-row"):
                             for standings in self.standings_list:
                                 contest = standings.contest
+                                contest_coffins = self.coffins_by_contest.get(contest.id, set())
                                 for problem in standings.problems:
-                                    with tag('th'):
+                                    with tag('th', klass="coffin" if problem.index in contest_coffins else ""):
                                         with tag('a', href = get_problem_url(self.group_id, contest.id, problem.index), klass = "fancy-link"):
                                             with tag('span'):
                                                 # Problem symbol (A, B, C etc)
@@ -255,6 +291,10 @@ class GroupStandings:
 
                                     with tag('a', href=get_link_to_profile(handle), klass = "fancy-link"):
                                         text(view_name)
+                                    # one coffin per solved coffin (problem nobody solved during the contest)
+                                    if row.totalCoffins > 0:
+                                        with tag('span', klass="coffins-badge", title=f"Решено гробов: {row.totalCoffins}"):
+                                            text("⚰️" * row.totalCoffins)
                                 # total solved
                                 with tag('td', style="font-weight: bold; text-align : center"):
                                     text(row.totalSolved)
@@ -270,15 +310,20 @@ class GroupStandings:
                                         pass
                                     contest_id = standings.contest.id
                                     contest_essential_tasks = self.essential_tasks_by_contest.get(contest_id, dict())
+                                    contest_coffins = self.coffins_by_contest.get(contest_id, set())
                                     for problem in standings.problems:
                                         problem_result : str = row.contestsInfo.get(contest_id, dict()).get(problem.index, "")
                                         klass = "overall-custom-rating-cell "
 
                                         is_essential = problem.index in contest_essential_tasks.get(row.handle, list())
                                         is_accepted = problem_result.startswith('+')
+                                        is_coffin = problem.index in contest_coffins
                                         is_presenter = self.presenter_by_contest_and_problem.get(contest_id, dict()).get(problem.index) == row.handle
 
-                                        if is_essential:
+                                        if is_coffin:
+                                            # coffin column is black; solved coffin is shown with a bold black plus
+                                            klass += "coffin-accepted " if is_accepted else "coffin "
+                                        elif is_essential:
                                             if is_accepted:
                                                 klass += "essential-accepted "
                                             else:
