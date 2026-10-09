@@ -53,13 +53,13 @@ class GroupStandings:
             )
 
             # Number of solved "coffins": problems that nobody solved before the end of the contest
-            self.totalCoffins = sum(
-                1
+            self.totalCoffins = len([
+                problem
                 for standings in standings_list
                 for problem, problemResult in zip(standings.problems, standings.problemResults)
                 if (problemResult.points or 0) > 0
                 and problem.index in coffins_by_contest.get(standings.contest.id, set())
-            )
+            ])
 
             self.contestsInfo = {
                 standings.contest.id : dict(
