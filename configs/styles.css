@@ -202,6 +202,29 @@ span.confirmation-button {
     background-color: #B9F6CA !important;
 }
 
+/* Coffins: problems that nobody solved during the contest */
+
+.coffin {
+    background-color: #000000 !important;
+    color: #9E9E9E;
+}
+
+.coffin a {
+    color: #ffffff;
+}
+
+.coffin-accepted {
+    background-color: #FFC107 !important;
+    color: #000000;
+    font-weight: 900;
+    box-shadow: inset 0 0 0 2px #FF8F00;
+}
+
+.coffins-badge {
+    margin-left: 0.3em;
+    white-space: nowrap;
+}
+
 .presenter-cell {
     position: relative;
 }
