@@ -24,8 +24,14 @@ def parse_arguments():
 
     parser.add_argument("-m", "--mapping",
                         help="Path to file with csv table that maps codeforces handles to names")
+    parser.add_argument("-b", "--ban_after_unclosed_essential_tasks", action="store_true",
+                        help="Ban all submissions in contests after the one with unclosed essential task. "
+                             "Banned submissions are not counted and are shown black. Requires -e")
 
-    return parser.parse_args()
+    args = parser.parse_args()
+    if args.ban_after_unclosed_essential_tasks and args.essential_tasks_config is None:
+        parser.error("--ban_after_unclosed_essential_tasks requires --essential_tasks_config")
+    return args
 
 def read_ignored_contests(path : str):
     result = set()
@@ -69,6 +75,8 @@ def main():
         essential_tasks_list = parse_essential_tasks_config(essential_tasks_config)
         logger.info("Parsed essential tasks")
         groupStandings.add_essential_tasks(essential_tasks_list)
+        if args.ban_after_unclosed_essential_tasks:
+            groupStandings.ban_after_unclosed_essential_tasks()
 
     mapping_path = args.mapping
     if mapping_path is not None:
