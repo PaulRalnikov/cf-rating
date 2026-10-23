@@ -1,5 +1,6 @@
 from dotenv import load_dotenv
 import argparse
+from datetime import datetime, timedelta, timezone
 
 from queries.contest_list import *
 from queries.contest_standings import *
@@ -10,6 +11,8 @@ from common import *
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 logger = logging.getLogger(__name__)
+
+MOSCOW_TIMEZONE = timezone(timedelta(hours=3))
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="")
@@ -26,12 +29,29 @@ def parse_arguments():
                         help="Path to file with csv table that maps codeforces handles to names")
     parser.add_argument("-b", "--ban_after_unclosed_essential_tasks", action="store_true",
                         help="Ban all submissions in contests after the one with unclosed essential task. "
-                             "Banned submissions are not counted and are shown black. Requires -e")
+                             "Banned submissions are not counted and are shown black. "
+                             "Submissions to essential tasks are never banned. Requires -e")
+    parser.add_argument("-s", "--ban_since", type=parse_ban_since,
+                        help="Date (or datetime) when the ban rule was introduced, in ISO format (e.g. 2026-10-23). "
+                             "Submissions made before it are not banned. Moscow time is assumed if no timezone given. "
+                             "Requires -b")
 
     args = parser.parse_args()
     if args.ban_after_unclosed_essential_tasks and args.essential_tasks_config is None:
         parser.error("--ban_after_unclosed_essential_tasks requires --essential_tasks_config")
+    if args.ban_since is not None and not args.ban_after_unclosed_essential_tasks:
+        parser.error("--ban_since requires --ban_after_unclosed_essential_tasks")
     return args
+
+def parse_ban_since(value : str) -> int:
+    """Parses ISO date/datetime into unix seconds"""
+    try:
+        moment = datetime.fromisoformat(value)
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"Could not parse date '{value}'; expected ISO format, e.g. 2026-10-23")
+    if moment.tzinfo is None:
+        moment = moment.replace(tzinfo=MOSCOW_TIMEZONE)
+    return int(moment.timestamp())
 
 def read_ignored_contests(path : str):
     result = set()
@@ -76,7 +96,7 @@ def main():
         logger.info("Parsed essential tasks")
         groupStandings.add_essential_tasks(essential_tasks_list)
         if args.ban_after_unclosed_essential_tasks:
-            groupStandings.ban_after_unclosed_essential_tasks()
+            groupStandings.ban_after_unclosed_essential_tasks(args.ban_since)
 
     mapping_path = args.mapping
     if mapping_path is not None:
