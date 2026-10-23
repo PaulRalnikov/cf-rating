@@ -220,6 +220,14 @@ span.confirmation-button {
     box-shadow: inset 0 0 0 2px #FF8F00;
 }
 
+/* Banned: submissions made in contests after unclosed essential task */
+
+.banned {
+    background-color: #BDBDBD !important;
+    color: #616161;
+    text-decoration: line-through;
+}
+
 .coffins-badge {
     margin-left: 0.3em;
     white-space: nowrap;

@@ -23,9 +23,16 @@ def standings_cell(problemResult : ProblemResult) -> str:
 
 class GroupStandings:
     class StandingsRow:
-        def __init__(self, handle : str, standings_list : list[SoloHandleStandings],
-                     coffins_by_contest : dict[int, set[str]]):
+        def __init__(self, handle : str, all_standings_list : list[SoloHandleStandings],
+                     coffins_by_contest : dict[int, set[str]], banned_contests : set[int]):
             self.handle = handle
+            self.bannedContests = banned_contests
+            # Results in banned contests are shown in the table but not counted in totals
+            standings_list = [
+                standings
+                for standings in all_standings_list
+                if standings.contest.id not in banned_contests
+            ]
             self.totalSolved = sum(
                 round(problemResult.points)
                 for standings in standings_list
@@ -70,13 +77,13 @@ class GroupStandings:
                         )
                     )
                 )
-                for standings in standings_list
+                for standings in all_standings_list
             }
 
         def __str__(self):
             return (f"Row(handle={self.handle}, total_solved={self.totalSolved}, "
                     f"total_penalty={self.totalPenalty}, total_upsolved={self.totalUpsolved}, "
-                    f"total_coffins={self.totalCoffins}, "
+                    f"total_coffins={self.totalCoffins}, banned_contests={self.bannedContests}, "
                     f"contests_info={self.contestsInfo})")
 
         def __repr__(self):
@@ -88,6 +95,8 @@ class GroupStandings:
         self.standings_list = standings_list
         self.essential_tasks_by_contest = None
         self.mapping = None
+        # Gives set of banned contest ids by handle
+        self.banned_contests_by_handle = dict()
         problem_results_by_handle_and_contest = defaultdict(dict)
         contest_problems = defaultdict(list)
         contest_by_id = dict()
@@ -135,16 +144,40 @@ class GroupStandings:
                     for i in range(len(row.problemResults)):
                         problem_results_by_handle_and_contest[handle][contest_id][i] += row.problemResults[i]
 
+        self.problem_results_by_handle_and_contest = problem_results_by_handle_and_contest
+        self.contest_problems = contest_problems
+        self.contest_by_id = contest_by_id
+
+        # "Coffin" is a problem that nobody solved before the end of the contest.
+        # While the contest is not finished yet, no problem is considered a coffin
+        self.coffins_by_contest = {
+            contest_id : {
+                problem.index
+                for problem in problems
+                if (contest_id, problem.index) not in solved_in_contest
+            }
+            for contest_id, problems in contest_problems.items()
+            if contest_by_id[contest_id].phase not in ("BEFORE", "CODING")
+        }
+
+        self.build_rows()
+
+    def build_rows(self):
+        """
+        Computes presenters and standings rows; results in banned contests are not taken into account
+        """
         # For each (contest, problem) picks the handle that should present it at the review:
         # the one who solved it with the fewest wrong attempts, and on a tie, the one who solved it first
         self.presenter_by_contest_and_problem = defaultdict(dict)
-        for contest_id, problems in contest_problems.items():
+        for contest_id, problems in self.contest_problems.items():
             for problem_idx, problem in enumerate(problems):
                 best_handle = None
                 best_key = None
-                for handle, contest_results in problem_results_by_handle_and_contest.items():
+                for handle, contest_results in self.problem_results_by_handle_and_contest.items():
                     problem_results = contest_results.get(contest_id)
                     if problem_results is None:
+                        continue
+                    if contest_id in self.banned_contests_by_handle.get(handle, set()):
                         continue
                     problem_result = problem_results[problem_idx]
                     if (problem_result.points or 0) <= 0:
@@ -160,32 +193,21 @@ class GroupStandings:
                         best_handle = handle
                 self.presenter_by_contest_and_problem[contest_id][problem.index] = best_handle
 
-        # "Coffin" is a problem that nobody solved before the end of the contest.
-        # While the contest is not finished yet, no problem is considered a coffin
-        self.coffins_by_contest = {
-            contest_id : {
-                problem.index
-                for problem in problems
-                if (contest_id, problem.index) not in solved_in_contest
-            }
-            for contest_id, problems in contest_problems.items()
-            if contest_by_id[contest_id].phase not in ("BEFORE", "CODING")
-        }
-
         self.rows = sorted(list(
             self.StandingsRow(
                     handle,
                     list(
                         SoloHandleStandings(
-                            contest_by_id[contest_id],
-                            contest_problems[contest_id],
+                            self.contest_by_id[contest_id],
+                            self.contest_problems[contest_id],
                             problemResults
                         )
                         for contest_id, problemResults in contest_results.items()
                     ),
-                    self.coffins_by_contest
+                    self.coffins_by_contest,
+                    self.banned_contests_by_handle.get(handle, set())
                 )
-                for handle, contest_results in problem_results_by_handle_and_contest.items()
+                for handle, contest_results in self.problem_results_by_handle_and_contest.items()
             ),
             # More solved is better; on a tie, less penalty is better;
             # on a further tie, fewer upsolved (post-contest) problems is better
@@ -197,6 +219,40 @@ class GroupStandings:
             item.contestId : item.essential_tasks
             for item in essential_tasks
         }
+
+    def has_unclosed_essential_tasks(self, handle : str, contest_id : int) -> bool:
+        """
+        Returns True if handle has at least one not solved essential task in given contest
+        """
+        essential_tasks = self.essential_tasks_by_contest.get(contest_id, dict()).get(handle, list())
+        problem_results = self.problem_results_by_handle_and_contest[handle].get(contest_id, list())
+        solved = {
+            problem.index
+            for problem, problem_result in zip(self.contest_problems[contest_id], problem_results)
+            if (problem_result.points or 0) > 0
+        }
+        return any(task not in solved for task in essential_tasks)
+
+    def ban_after_unclosed_essential_tasks(self):
+        """
+        If handle has unclosed essential task in some contest, all its results in subsequent contests are banned:
+        they are not counted in totals and are shown black
+        """
+        if self.essential_tasks_by_contest is None:
+            logger.warning("Essential tasks are not set; nothing to ban")
+            return
+
+        # standings_list is sorted from the newest contest to the oldest one
+        contest_ids = [standings.contest.id for standings in reversed(self.standings_list)]
+        self.banned_contests_by_handle = dict()
+        for handle in self.problem_results_by_handle_and_contest:
+            for i, contest_id in enumerate(contest_ids):
+                if self.has_unclosed_essential_tasks(handle, contest_id):
+                    self.banned_contests_by_handle[handle] = set(contest_ids[i + 1:])
+                    break
+        logger.info(f"Banned contests: {self.banned_contests_by_handle}")
+
+        self.build_rows()
 
     def add_mapping(self, mapping : Mapping):
         self.mapping = mapping
@@ -319,8 +375,12 @@ class GroupStandings:
                                         is_accepted = problem_result.startswith('+')
                                         is_coffin = problem.index in contest_coffins
                                         is_presenter = self.presenter_by_contest_and_problem.get(contest_id, dict()).get(problem.index) == row.handle
+                                        is_banned = contest_id in row.bannedContests and problem_result != ""
 
-                                        if is_coffin:
+                                        if is_banned:
+                                            # submissions after unclosed essential task are not counted
+                                            klass += "banned "
+                                        elif is_coffin:
                                             # coffin column is black; solved coffin is shown with a bold black plus
                                             klass += "coffin-accepted " if is_accepted else "coffin "
                                         elif is_essential:
