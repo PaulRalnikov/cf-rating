@@ -412,17 +412,18 @@ class GroupStandings:
                                         is_presenter = self.presenter_by_contest_and_problem.get(contest_id, dict()).get(problem.index) == row.handle
                                         is_banned = problem.index in row.bannedProblems.get(contest_id, set())
 
-                                        if is_banned:
+                                        if is_essential:
+                                            if is_accepted:
+                                                klass += "essential-accepted "
+                                            else:
+                                                klass += "essential-not-accepted "
+                                        elif is_banned:
                                             # submissions after unclosed essential task are not counted
                                             klass += "banned "
                                         elif is_coffin:
                                             # coffin column is black; solved coffin is shown with a bold black plus
                                             klass += "coffin-accepted " if is_accepted else "coffin "
-                                        elif is_essential:
-                                            if is_accepted:
-                                                klass += "essential-accepted "
-                                            else:
-                                                klass += "essential-not-accepted "
+
                                         elif is_accepted:
                                             klass += "not-essential-accepted "
 
