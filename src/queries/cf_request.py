@@ -6,6 +6,9 @@ import string
 import hashlib
 
 def cf_request(methodName : str, params : dict) -> requests.Response:
+    # Signing appends apiKey/time/apiSig.  Work on a copy so a retry can sign
+    # the original parameters again instead of including a stale signature.
+    params = dict(params)
     apiKey = os.getenv("API_KEY")
     apiSecret = os.getenv("API_SECRET")
 
